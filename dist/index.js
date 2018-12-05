@@ -8,22 +8,50 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const auth0_lock_1 = require("auth0-lock");
-const { AUTH0_API_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CALLBACK_URL } = process.env;
-const _initLock = () => {
-    return new auth0_lock_1.default(AUTH0_CLIENT_ID, AUTH0_DOMAIN, {
+const Cookies = require("js-cookie");
+const { AUTH0_API_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URL } = process.env;
+const isBrowser = typeof window !== "undefined";
+exports.checkIsAuthenticated = (ctx) => {
+    const isBrowser = typeof window !== "undefined";
+    const cookies = function () {
+        if (!isBrowser) {
+            if (!ctx || !ctx.req || !ctx.req.headers)
+                return {};
+            const cookies = ctx.req.headers.cookie;
+            if (!cookies)
+                return {};
+            return require('cookie').parse(cookies);
+        }
+        else {
+            return require('component-cookie')();
+        }
+    }();
+    const expiresAtStore = cookies && cookies.expires_at;
+    const expiresAt = expiresAtStore ? JSON.parse(expiresAtStore) : 0;
+    return new Date().getTime() < expiresAt;
+};
+const _initLock = (optionalParams = {}) => {
+    const redirectURL = AUTH0_REDIRECT_URL;
+    const Auth0Lock = require('auth0-lock').default;
+    const lock = new Auth0Lock(AUTH0_CLIENT_ID, AUTH0_DOMAIN, Object.assign({
         oidcConformant: true,
         autoclose: true,
         auth: {
-            sso: false,
-            redirectUrl: AUTH0_CALLBACK_URL,
+            redirect: !!redirectURL,
+            sso: true,
+            redirectUrl: redirectURL,
             responseType: 'token id_token',
             audience: AUTH0_API_AUDIENCE,
             params: {
                 scope: 'openid profile email user_metadata app_metadata picture'
             }
         },
+        optionalParams
+    }));
+    lock.on('authenticated', ({ idToken, accessToken, expiresIn }) => {
+        _setSession({ idToken, accessToken, expiresIn });
     });
+    return lock;
 };
 const _setSession = ({ accessToken, idToken, expiresIn }) => {
     if (!process.browser) {
@@ -31,57 +59,45 @@ const _setSession = ({ accessToken, idToken, expiresIn }) => {
     }
     if (accessToken && idToken) {
         let expiresAt = JSON.stringify(expiresIn * 1000 + new Date().getTime());
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('id_token', idToken);
-        localStorage.setItem('expires_at', expiresAt);
+        const expiresAtUnix = parseInt(expiresAt);
+        Cookies.set('access_token', accessToken, { expires: new Date(expiresAtUnix) });
+        Cookies.set('id_token', accessToken, { expires: new Date(expiresAtUnix) });
+        Cookies.set('expires_at', expiresAt, { expires: new Date(expiresAtUnix) });
     }
     else {
         throw new TypeError('Invalid response from Auth0 client');
     }
 };
 exports.getAccessToken = () => {
-    if (!exports.isAuthenticated()) {
-        return false;
-    }
-    const accessTokenStore = localStorage.getItem('access_token');
+    const accessTokenStore = Cookies.get('access_token');
     return accessTokenStore;
 };
-exports.authorizeViaPopup = () => __awaiter(this, void 0, void 0, function* () {
-    const _lock = _initLock();
-    const { idToken, accessToken, expiresIn } = yield new Promise((resolve, reject) => {
-        _lock.on('authenticated', ({ idToken, accessToken, expiresIn }) => {
-            resolve({ idToken, accessToken, expiresIn });
+exports.authorizeViaPopup = (optionalParams = {}) => __awaiter(this, void 0, void 0, function* () {
+    const _lock = _initLock(optionalParams);
+    return new Promise((resolve, reject) => {
+        _lock.on('authenticated', ({ idToken, accessToken, expiresIn, idTokenPayload }) => {
+            _setSession({ idToken, accessToken, expiresIn });
+            resolve({ idToken, accessToken, expiresIn, idTokenPayload });
         });
         _lock.on('authorization_error', err => {
             console.error(err);
-            alert(`Error: ${err.error}. Check the console for further details.`);
             reject(err);
         });
         _lock.show();
     });
-    _setSession({ idToken, accessToken, expiresIn });
-    return { idToken, accessToken };
 });
 exports.logout = (redirectTo) => {
-    if (!process.browser) {
+    if (!isBrowser) {
         throw new Error('logout() needs to be called client-side');
     }
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('id_token');
-    localStorage.removeItem('expires_at');
+    Cookies.remove('access_token');
+    Cookies.remove('id_token');
+    Cookies.remove('expires_at');
     if (redirectTo && redirectTo.length) {
         window.location.href = redirectTo;
     }
     else {
         window.location.reload();
     }
-};
-exports.isAuthenticated = () => {
-    if (!process.browser) {
-        return false;
-    }
-    const expiresAtStore = localStorage.getItem('expires_at');
-    const expiresAt = expiresAtStore ? JSON.parse(expiresAtStore) : 0;
-    return new Date().getTime() < expiresAt;
 };
 //# sourceMappingURL=index.js.map
