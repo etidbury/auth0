@@ -13,9 +13,28 @@ const {
 
 const isBrowser=typeof window!=="undefined"
 
-export const checkIsAuthenticated = (ctx?:any)=>{
+const _getCookies = (ctx:any={})=>{
 
     const isBrowser = typeof window!=="undefined"
+
+    //@ts-ignore
+    if (!isBrowser) {
+        // server
+        if (!ctx||!ctx.req||!ctx.req.headers) return {} // for Static export feature of Next.js
+
+        const cookies = ctx.req.headers.cookie
+        if (!cookies) return {}
+
+        return require('cookie').parse(cookies)
+    } else {
+        // browser
+        return require('component-cookie')();
+    }
+
+}
+export const checkIsAuthenticated = (ctx?:any)=>{
+
+  
     //@ts-ignore
     // if (!process.browser){
     //     return false
@@ -30,21 +49,7 @@ export const checkIsAuthenticated = (ctx?:any)=>{
     //     return true
     // }
 
-    const cookies = function(){
-        //@ts-ignore
-        if (!isBrowser) {
-            // server
-            if (!ctx||!ctx.req||!ctx.req.headers) return {} // for Static export feature of Next.js
-
-            const cookies = ctx.req.headers.cookie
-            if (!cookies) return {}
-
-            return require('cookie').parse(cookies)
-        } else {
-            // browser
-            return require('component-cookie')();
-        }
-    }()
+    const cookies = _getCookies(ctx)
 
     // const expiresAtStore=localStorage.getItem('expires_at')
     const expiresAtStore=cookies&&cookies.expires_at
@@ -160,12 +165,11 @@ const _setSession = ({ accessToken,idToken,expiresIn })=>{
   
 }
 
-export const getAccessToken = ()=>{
+export const getAccessToken = (ctx?:any)=>{
 
-    // const accessTokenStore = localStorage.getItem('access_token')
-    const accessTokenStore = Cookies.get('access_token')
-
-    return accessTokenStore
+    const cookies = _getCookies(ctx)
+    
+    return cookies&&cookies.access_token||''
 }
 export const authorizeViaPopup = async (optionalParams={})=>{
 
