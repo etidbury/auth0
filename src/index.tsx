@@ -81,6 +81,7 @@ const _initLock=(optionalParams={})=>{
                 //sso: false,
                 sso:true,
                 redirectUrl: redirectURL,
+                //responseType: 'token id_token',
                 responseType: 'token id_token',
                 audience: AUTH0_API_AUDIENCE,
                 params: {
@@ -168,7 +169,7 @@ const _setSession = ({ accessToken,idToken,expiresIn })=>{
 export const getAccessToken = (ctx?:any)=>{
 
     const cookies = _getCookies(ctx)
-    
+
     return cookies&&cookies.access_token||''
 }
 export const authorizeViaPopup = async (optionalParams={})=>{
@@ -212,6 +213,7 @@ export const logout = (redirectTo)=>{
     // localStorage.removeItem('id_token')
     // localStorage.removeItem('expires_at')
 
+    Cookies.remove('user_id')
     Cookies.remove('access_token')
     Cookies.remove('id_token')
     Cookies.remove('expires_at')
@@ -224,8 +226,55 @@ export const logout = (redirectTo)=>{
     
 }
 
+export const getUserInfo = (accessToken)=>{
+    const _lock = _initLock()
+   
+    return new Promise((resolve,reject)=>{
 
+        return _lock.getUserInfo(accessToken, (error, profile) =>{
+            if (error) {
+              // Handle error
+              reject(error)
+              return;
+            }
+            
+            resolve(profile)
 
+        })
+
+    });
+}
+
+export const dateAddDay = (days) => {
+    const result = new Date();
+    result.setDate(result.getDate() + days)
+    return result;
+}
+
+export const setUserId = (userId:string)=>{
+
+    //@ts-ignore
+    if (!isBrowser) {
+        throw new Error('setUserId() needs to be called client-side')
+    }
+
+    // localStorage.setItem('access_token', accessToken)
+    // localStorage.setItem('id_token', idToken)
+    // localStorage.setItem('expires_at', expiresAt)
+    Cookies.set('user_id', userId, { expires: dateAddDay(5)})
+}
+
+export const getUserId = (ctx?:any)=>{
+    
+
+    const cookies = _getCookies(ctx)
+
+    // localStorage.setItem('access_token', accessToken)
+    // localStorage.setItem('id_token', idToken)
+    // localStorage.setItem('expires_at', expiresAt)
+    return cookies && cookies.user_id
+
+}
 
 // export const Authenticated = ({children})=> {
 //     return isAuthenticated() ? children : ""

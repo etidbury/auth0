@@ -11,21 +11,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Cookies = require("js-cookie");
 const { AUTH0_API_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URL } = process.env;
 const isBrowser = typeof window !== "undefined";
-exports.checkIsAuthenticated = (ctx) => {
+const _getCookies = (ctx = {}) => {
     const isBrowser = typeof window !== "undefined";
-    const cookies = function () {
-        if (!isBrowser) {
-            if (!ctx || !ctx.req || !ctx.req.headers)
-                return {};
-            const cookies = ctx.req.headers.cookie;
-            if (!cookies)
-                return {};
-            return require('cookie').parse(cookies);
-        }
-        else {
-            return require('component-cookie')();
-        }
-    }();
+    if (!isBrowser) {
+        if (!ctx || !ctx.req || !ctx.req.headers)
+            return {};
+        const cookies = ctx.req.headers.cookie;
+        if (!cookies)
+            return {};
+        return require('cookie').parse(cookies);
+    }
+    else {
+        return require('component-cookie')();
+    }
+};
+exports.checkIsAuthenticated = (ctx) => {
+    const cookies = _getCookies(ctx);
     const expiresAtStore = cookies && cookies.expires_at;
     const expiresAt = expiresAtStore ? JSON.parse(expiresAtStore) : 0;
     return new Date().getTime() < expiresAt;
@@ -68,9 +69,9 @@ const _setSession = ({ accessToken, idToken, expiresIn }) => {
         throw new TypeError('Invalid response from Auth0 client');
     }
 };
-exports.getAccessToken = () => {
-    const accessTokenStore = Cookies.get('access_token');
-    return accessTokenStore;
+exports.getAccessToken = (ctx) => {
+    const cookies = _getCookies(ctx);
+    return cookies && cookies.access_token || '';
 };
 exports.authorizeViaPopup = (optionalParams = {}) => __awaiter(this, void 0, void 0, function* () {
     const _lock = _initLock(optionalParams);
@@ -90,6 +91,7 @@ exports.logout = (redirectTo) => {
     if (!isBrowser) {
         throw new Error('logout() needs to be called client-side');
     }
+    Cookies.remove('user_id');
     Cookies.remove('access_token');
     Cookies.remove('id_token');
     Cookies.remove('expires_at');
@@ -99,5 +101,32 @@ exports.logout = (redirectTo) => {
     else {
         window.location.reload();
     }
+};
+exports.getUserInfo = (accessToken) => {
+    const _lock = _initLock();
+    return new Promise((resolve, reject) => {
+        return _lock.getUserInfo(accessToken, (error, profile) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve(profile);
+        });
+    });
+};
+exports.dateAddDay = (days) => {
+    const result = new Date();
+    result.setDate(result.getDate() + days);
+    return result;
+};
+exports.setUserId = (userId) => {
+    if (!isBrowser) {
+        throw new Error('setUserId() needs to be called client-side');
+    }
+    Cookies.set('user_id', userId, { expires: exports.dateAddDay(5) });
+};
+exports.getUserId = (ctx) => {
+    const cookies = _getCookies(ctx);
+    return cookies && cookies.user_id;
 };
 //# sourceMappingURL=index.js.map
