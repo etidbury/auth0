@@ -1,6 +1,10 @@
 // import gql from 'graphql-tag'
 import * as Cookies from 'js-cookie'
 
+export { HasRoleDirective as hasRole} from './schemaDirectives/HasRoleDirective'
+export { IsAuthenticatedDirective as isAuthenticated} from './schemaDirectives/IsAuthenticatedDirective'
+export { IsOwnerOrHasRoleDirective as isOwnerOrHasRole} from './schemaDirectives/IsOwnerOrHasRoleDirective'
+
 //@ts-ignore
 const {
     AUTH0_API_AUDIENCE,

@@ -9,6 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Cookies = require("js-cookie");
+var HasRoleDirective_1 = require("./schemaDirectives/HasRoleDirective");
+exports.hasRole = HasRoleDirective_1.HasRoleDirective;
+var IsAuthenticatedDirective_1 = require("./schemaDirectives/IsAuthenticatedDirective");
+exports.isAuthenticated = IsAuthenticatedDirective_1.IsAuthenticatedDirective;
+var IsOwnerOrHasRoleDirective_1 = require("./schemaDirectives/IsOwnerOrHasRoleDirective");
+exports.isOwnerOrHasRole = IsOwnerOrHasRoleDirective_1.IsOwnerOrHasRoleDirective;
 const { AUTH0_API_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URL } = process.env;
 const isBrowser = typeof window !== "undefined";
 const _getCookies = (ctx = {}) => {
