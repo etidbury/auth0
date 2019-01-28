@@ -58,12 +58,14 @@ const _setSession = ({ accessToken, idToken, expiresIn }) => {
     if (!process.browser) {
         throw new Error('setSession(...) needs to be called client-side');
     }
-    if (accessToken && idToken) {
+    if (accessToken) {
         let expiresAt = JSON.stringify(expiresIn * 1000 + new Date().getTime());
         const expiresAtUnix = parseInt(expiresAt);
         Cookies.set('access_token', accessToken, { expires: new Date(expiresAtUnix) });
-        Cookies.set('id_token', accessToken, { expires: new Date(expiresAtUnix) });
         Cookies.set('expires_at', expiresAt, { expires: new Date(expiresAtUnix) });
+        if (idToken && idToken.length) {
+            Cookies.set('id_token', idToken, { expires: new Date(expiresAtUnix) });
+        }
     }
     else {
         throw new TypeError('Invalid response from Auth0 client');

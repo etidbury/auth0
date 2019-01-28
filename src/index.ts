@@ -9,8 +9,6 @@ const {
     AUTH0_REDIRECT_URL
 } = process.env
 
-
-
 const isBrowser=typeof window!=="undefined"
 
 const _getCookies = (ctx:any={})=>{
@@ -81,8 +79,8 @@ const _initLock=(optionalParams={})=>{
                 //sso: false,
                 sso:true,
                 redirectUrl: redirectURL,
-                //responseType: 'token id_token',
                 responseType: 'token id_token',
+                //responseType: 'token',
                 audience: AUTH0_API_AUDIENCE,
                 params: {
                     scope: 'openid profile email user_metadata app_metadata picture'
@@ -143,7 +141,7 @@ const _setSession = ({ accessToken,idToken,expiresIn })=>{
         throw new Error('setSession(...) needs to be called client-side')
     }
     
-    if (accessToken && idToken) {
+    if (accessToken) {
         // Set the time that the access token will expire at
         let expiresAt = JSON.stringify(
             expiresIn * 1000 + new Date().getTime()
@@ -156,10 +154,13 @@ const _setSession = ({ accessToken,idToken,expiresIn })=>{
         const expiresAtUnix = parseInt(expiresAt)
         
         Cookies.set('access_token', accessToken, { expires: new Date(expiresAtUnix)});
-        Cookies.set('id_token', accessToken, { expires: new Date(expiresAtUnix)});
-        Cookies.set('expires_at', expiresAt, { expires: new Date(expiresAtUnix)});
 
-    
+        Cookies.set('expires_at', expiresAt, { expires: new Date(expiresAtUnix)});
+        
+        if (idToken && idToken.length){
+            Cookies.set('id_token', idToken, { expires: new Date(expiresAtUnix)});
+        }
+        
     }else{
         throw new TypeError('Invalid response from Auth0 client')
     }
