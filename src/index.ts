@@ -4,6 +4,7 @@ import * as Cookies from 'js-cookie'
 export { HasRoleDirective as hasRole} from './schemaDirectives/HasRoleDirective'
 export { IsAuthenticatedDirective as isAuthenticated} from './schemaDirectives/IsAuthenticatedDirective'
 export { IsOwnerOrHasRoleDirective as isOwnerOrHasRole} from './schemaDirectives/IsOwnerOrHasRoleDirective'
+export { verifyAndDecodeIdToken } from './userToken'
 
 //@ts-ignore
 const {
@@ -13,7 +14,7 @@ const {
     AUTH0_REDIRECT_URL
 } = process.env
 
-const isBrowser=typeof window!=="undefined"
+const isBrowser=typeof window !== "undefined"
 
 const _getCookies = (ctx:any={})=>{
 
