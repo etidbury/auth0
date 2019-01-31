@@ -1,6 +1,6 @@
 {
   "name": "@etidbury/auth0",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "",
   "main": "dist/index.js",
   "module": "src/index.ts",
@@ -9,7 +9,7 @@
     "dist/**/*"
   ],
   "engines": {
-    "node": "10.x.x"
+    "node": ">=8.10.0"
   },
   "scripts": {
     "build": "npm run build:reset && NODE_ENV=production $(npm bin)/tsc",
