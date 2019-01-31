@@ -1,13 +1,9 @@
 {
   "name": "@etidbury/auth0",
-  "version": "0.0.29",
+  "version": "0.0.32",
   "description": "",
   "main": "dist/index.js",
-  "module": "src/index.ts",
-  "files": [
-    "src/**/*",
-    "dist/**/*"
-  ],
+  "types": "dist/index.d.ts",
   "engines": {
     "node": ">=8.10.0"
   },
