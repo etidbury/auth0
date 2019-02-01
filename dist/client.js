@@ -4,4 +4,4 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./_ssr"));
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=client.js.map

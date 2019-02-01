@@ -1,6 +1,6 @@
 {
   "name": "@etidbury/auth0",
-  "version": "0.0.32",
+  "version": "0.0.37",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,16 +20,18 @@
   },
   "dependencies": {
     "@etidbury/ts-lib-helpers": "^0.0.1",
+    "apollo-errors": "^1.9.0",
     "auth0-lock": "^11.11.0",
     "component-cookie": "^1.1.4",
     "cookie": "^0.3.1",
+    "fs": "^0.0.1-security",
+    "graphql": "^14.1.1",
+    "graphql-tools": "^4.0.4",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
     "jwks-rsa": "^1.3.0",
     "react": "^16.6.3",
-    "url-join": "4.0.0",
-    "apollo-errors": "^1.9.0",
-    "apollo-server": "^2.3.2"
+    "url-join": "4.0.0"
   },
   "devDependencies": {
     "@types/auth0-lock": "^11.4.9",

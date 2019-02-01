@@ -48,7 +48,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var apollo_server_1 = require("apollo-server");
+var graphql_tools_1 = require("graphql-tools");
 var graphql_1 = require("graphql");
 var errors_1 = require("../errors");
 var lodash_1 = require("lodash");
@@ -146,6 +146,6 @@ var IsOwnerOrHasRoleDirective = (function (_super) {
         };
     };
     return IsOwnerOrHasRoleDirective;
-}(apollo_server_1.SchemaDirectiveVisitor));
+}(graphql_tools_1.SchemaDirectiveVisitor));
 exports.IsOwnerOrHasRoleDirective = IsOwnerOrHasRoleDirective;
 //# sourceMappingURL=IsOwnerOrHasRoleDirective.js.map

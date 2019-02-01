@@ -1,3 +1,4 @@
+
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 // const jwks = require('../middleware/auth')
@@ -17,8 +18,10 @@ const jwks = jwksClient({
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 })
 
-//todo: move to @etidbury/auth0
 export const verifyAndDecodeIdToken = (idToken) => new Promise((resolve, reject) => {
+
+
+
     try {
 
         let resolved = false
