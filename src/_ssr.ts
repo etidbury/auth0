@@ -1,12 +1,16 @@
 // import gql from 'graphql-tag'
 import * as Cookies from 'js-cookie'
 
-const {
+
+import config from './config'
+/*
+{
     AUTH0_API_AUDIENCE,
     AUTH0_DOMAIN,
     AUTH0_CLIENT_ID,
     AUTH0_REDIRECT_URL
-} = process.env
+}
+*/
 
 //todo: check env vars set
 
@@ -64,13 +68,13 @@ export const checkIsAuthenticated = (ctx?:any):boolean=>{
 
 const _initLock=(optionalParams={})=>{
 
-    const redirectURL=AUTH0_REDIRECT_URL
+    const redirectURL=config.AUTH0_REDIRECT_URL
     
     const Auth0Lock = require('auth0-lock').default
 
     const lock = new Auth0Lock(
-        AUTH0_CLIENT_ID as any, 
-        AUTH0_DOMAIN as any, 
+        config.AUTH0_CLIENT_ID as any, 
+        config.AUTH0_DOMAIN as any, 
         Object.assign({
             oidcConformant: true,
             autoclose: true,
@@ -82,7 +86,7 @@ const _initLock=(optionalParams={})=>{
                 redirectUrl: redirectURL,
                 responseType: 'token id_token',
                 //responseType: 'token',
-                audience: AUTH0_API_AUDIENCE,
+                audience: config.AUTH0_API_AUDIENCE,
                 params: {
                     scope: 'openid profile email user_metadata app_metadata picture'
                 }

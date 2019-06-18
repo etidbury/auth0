@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Cookies = require("js-cookie");
-var _a = process.env, AUTH0_API_AUDIENCE = _a.AUTH0_API_AUDIENCE, AUTH0_DOMAIN = _a.AUTH0_DOMAIN, AUTH0_CLIENT_ID = _a.AUTH0_CLIENT_ID, AUTH0_REDIRECT_URL = _a.AUTH0_REDIRECT_URL;
+var config_1 = require("./config");
 var isBrowser = typeof window !== "undefined";
 var _getCookies = function (ctx) {
     if (ctx === void 0) { ctx = {}; }
@@ -62,9 +62,9 @@ exports.checkIsAuthenticated = function (ctx) {
 };
 var _initLock = function (optionalParams) {
     if (optionalParams === void 0) { optionalParams = {}; }
-    var redirectURL = AUTH0_REDIRECT_URL;
+    var redirectURL = config_1.default.AUTH0_REDIRECT_URL;
     var Auth0Lock = require('auth0-lock').default;
-    var lock = new Auth0Lock(AUTH0_CLIENT_ID, AUTH0_DOMAIN, Object.assign({
+    var lock = new Auth0Lock(config_1.default.AUTH0_CLIENT_ID, config_1.default.AUTH0_DOMAIN, Object.assign({
         oidcConformant: true,
         autoclose: true,
         auth: {
@@ -72,7 +72,7 @@ var _initLock = function (optionalParams) {
             sso: true,
             redirectUrl: redirectURL,
             responseType: 'token id_token',
-            audience: AUTH0_API_AUDIENCE,
+            audience: config_1.default.AUTH0_API_AUDIENCE,
             params: {
                 scope: 'openid profile email user_metadata app_metadata picture'
             }
