@@ -1,8 +1,6 @@
 // import gql from 'graphql-tag'
 import * as Cookies from 'js-cookie'
 
-
-import config from './config'
 /*
 {
     AUTH0_API_AUDIENCE,
@@ -66,41 +64,41 @@ export const checkIsAuthenticated = (ctx?:any):boolean=>{
 
 
 
-const _initLock=(optionalParams={})=>{
+// const _initLock=(optionalParams={})=>{
 
-    const redirectURL=config.AUTH0_REDIRECT_URL
+//     const redirectURL=config.AUTH0_REDIRECT_URL
     
-    const Auth0Lock = require('auth0-lock').default
+//     const Auth0Lock = require('auth0-lock').default
 
-    const lock = new Auth0Lock(
-        config.AUTH0_CLIENT_ID as any, 
-        config.AUTH0_DOMAIN as any, 
-        Object.assign({
-            oidcConformant: true,
-            autoclose: true,
-            auth: {
-                redirect:!!redirectURL,
-                //redirect:false,
-                //sso: false,
-                sso:true,
-                redirectUrl: redirectURL,
-                responseType: 'token id_token',
-                //responseType: 'token',
-                audience: config.AUTH0_API_AUDIENCE,
-                params: {
-                    scope: 'openid profile email user_metadata app_metadata picture'
-                }
-            },
-            optionalParams
-        })
-    )
+//     const lock = new Auth0Lock(
+//         config.AUTH0_CLIENT_ID as any, 
+//         config.AUTH0_DOMAIN as any, 
+//         Object.assign({
+//             oidcConformant: true,
+//             autoclose: true,
+//             auth: {
+//                 redirect:!!redirectURL,
+//                 //redirect:false,
+//                 //sso: false,
+//                 sso:true,
+//                 redirectUrl: redirectURL,
+//                 responseType: 'token id_token',
+//                 //responseType: 'token',
+//                 audience: config.AUTH0_API_AUDIENCE,
+//                 params: {
+//                     scope: 'openid profile email user_metadata app_metadata picture'
+//                 }
+//             },
+//             optionalParams
+//         })
+//     )
 
-    lock.on('authenticated', ({ idToken,accessToken,expiresIn })=>{
-        _setSession({ idToken,accessToken,expiresIn })
-    })
+//     lock.on('authenticated', ({ idToken,accessToken,expiresIn })=>{
+//         _setSession({ idToken,accessToken,expiresIn })
+//     })
 
-    return lock
-}
+//     return lock
+// }
 
 // const _initLock = ({ redirectURL=AUTH0_REDIRECT_URL })=>{
 
@@ -179,42 +177,94 @@ export const getAccessToken = (ctx?:any):string=>{
     return cookies&&cookies.access_token||''
 }
 
-export const authorizeViaPopup = async (optionalParams={}):Promise<{
-    idToken:string,
-    accessToken?:string,
-    expiresIn:string,
-    idTokenPayload?:{}
-}>=>{
 
-    // const _lock = _initLock({redirectURL})
+export class Auth0LockHelper {
 
-    const _lock = _initLock(optionalParams)
+    private _lock
 
-    return new Promise((resolve,reject)=>{
-        // Add a callback for Lock's `authenticated` event
-        _lock.on('authenticated', ({ idToken,accessToken,expiresIn,idTokenPayload })=>{
+    constructor(clientId:string,domain:string,audience:string,redirectURL:string,optionalParams={}){
+     
+    
+        const Auth0Lock = require('auth0-lock').default
+    
+        this._lock = new Auth0Lock(
+            clientId,
+            domain,
+            Object.assign({
+                oidcConformant: true,
+                autoclose: true,
+                auth: {
+                    redirect:!!redirectURL,
+                    //redirect:false,
+                    //sso: false,
+                    sso:true,
+                    redirectUrl: redirectURL,
+                    responseType: 'token id_token',
+                    //responseType: 'token',
+                    audience,
+                    params: {
+                        scope: 'openid profile email user_metadata app_metadata picture'
+                    }
+                },
+                optionalParams
+            })
+        )
+    
+        this._lock.on('authenticated', ({ idToken,accessToken,expiresIn })=>{
             _setSession({ idToken,accessToken,expiresIn })
-
-            resolve({ idToken,accessToken,expiresIn,idTokenPayload })
-
         })
-        // Add a callback for Lock's `authorization_error` event
-        _lock.on('authorization_error', err => {
-            console.error(err)
-            reject(err)
-            // this.cb(data)
+    
+    }
+
+    async authorizeViaPopup(optionalParams={}):Promise<{
+        idToken:string,
+        accessToken?:string,
+        expiresIn:string,
+        idTokenPayload?:{}
+    }> {
+        return new Promise((resolve,reject)=>{
+            // Add a callback for Lock's `authenticated` event
+            this._lock.on('authenticated', ({ idToken,accessToken,expiresIn,idTokenPayload })=>{
+                _setSession({ idToken,accessToken,expiresIn })
+    
+                resolve({ idToken,accessToken,expiresIn,idTokenPayload })
+    
+            })
+            // Add a callback for Lock's `authorization_error` event
+            this._lock.on('authorization_error', err => {
+                console.error(err)
+                reject(err)
+                // this.cb(data)
+            })
+    
+            this._lock.show()
+              
         })
+    }
 
-        _lock.show()
-          
-    })
+    //todo: add response types
+    async getUserInfo(ctx?:any):Promise<any>{
+        
+        const accessToken = getAccessToken(ctx)
+        
+        return new Promise((resolve,reject)=>{
 
-  
+            return this._lock.getUserInfo(accessToken, (error, profile) =>{
+                if (error) {
+                    // Handle error
+                    reject(error)
+                    return
+                }
+                
+                resolve(profile)
+
+            })
+
+        });
+    }
 }
 
 export const logout = (redirectTo)=>{
-
-
 
     //@ts-ignore
     if (!isBrowser) {
@@ -237,25 +287,7 @@ export const logout = (redirectTo)=>{
     }
     
 }
-//todo: add response types
-export const getUserInfo = (accessToken):Promise<any>=>{
-    const _lock = _initLock()
-   
-    return new Promise((resolve,reject)=>{
 
-        return _lock.getUserInfo(accessToken, (error, profile) =>{
-            if (error) {
-              // Handle error
-              reject(error)
-              return;
-            }
-            
-            resolve(profile)
-
-        })
-
-    });
-}
 
 export const dateAddDay = (days):Date => {
     const result = new Date();
