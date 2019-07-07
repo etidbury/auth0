@@ -1,6 +1,6 @@
 {
   "name": "@etidbury/auth0",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,6 +8,7 @@
     "node": ">=8.10.0"
   },
   "scripts": {
+    "prepublish": "npm run build",
     "build": "npm run build:reset && NODE_ENV=production $(npm bin)/tsc",
     "build:reset": "rm -rf dist",
     "eslint": "$(npm bin)/eslint --max-warnings 300 ./",

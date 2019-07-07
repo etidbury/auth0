@@ -62,16 +62,17 @@ exports.checkIsAuthenticated = function (ctx) {
 };
 var _initLock = function (optionalParams) {
     if (optionalParams === void 0) { optionalParams = {}; }
+    var redirectURL = config_1.default.AUTH0_REDIRECT_URL;
     var Auth0Lock = require('auth0-lock').default;
-    var lock = new Auth0Lock(config_1.AUTH0_CLIENT_ID, config_1.AUTH0_DOMAIN, Object.assign({
+    var lock = new Auth0Lock(config_1.default.AUTH0_CLIENT_ID, config_1.default.AUTH0_DOMAIN, Object.assign({
         oidcConformant: true,
         autoclose: true,
         auth: {
-            redirect: config_1.AUTH0_REDIRECT_URL,
+            redirect: !!redirectURL,
             sso: true,
-            redirectUrl: config_1.AUTH0_REDIRECT_URL,
+            redirectUrl: redirectURL,
             responseType: 'token id_token',
-            audience: config_1.AUTH0_API_AUDIENCE,
+            audience: config_1.default.AUTH0_API_AUDIENCE,
             params: {
                 scope: 'openid profile email user_metadata app_metadata picture'
             }
