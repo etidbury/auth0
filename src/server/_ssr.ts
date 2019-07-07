@@ -2,7 +2,7 @@
 import * as Cookies from 'js-cookie'
 
 
-import {AUTH0_API_AUDIENCE,AUTH0_CLIENT_ID,AUTH0_DOMAIN,AUTH0_REDIRECT_URL} from './config'
+import config from './config'
 /*
 {
     AUTH0_API_AUDIENCE,
@@ -67,24 +67,26 @@ export const checkIsAuthenticated = (ctx?:any):boolean=>{
 
 
 const _initLock=(optionalParams={})=>{
+
+    const redirectURL=config.AUTH0_REDIRECT_URL
     
     const Auth0Lock = require('auth0-lock').default
 
     const lock = new Auth0Lock(
-        AUTH0_CLIENT_ID, 
-        AUTH0_DOMAIN, 
+        config.AUTH0_CLIENT_ID as any, 
+        config.AUTH0_DOMAIN as any, 
         Object.assign({
             oidcConformant: true,
             autoclose: true,
             auth: {
-                redirect:AUTH0_REDIRECT_URL,
+                redirect:!!redirectURL,
                 //redirect:false,
                 //sso: false,
                 sso:true,
-                redirectUrl: AUTH0_REDIRECT_URL,
+                redirectUrl: redirectURL,
                 responseType: 'token id_token',
                 //responseType: 'token',
-                audience: AUTH0_API_AUDIENCE,
+                audience: config.AUTH0_API_AUDIENCE,
                 params: {
                     scope: 'openid profile email user_metadata app_metadata picture'
                 }
